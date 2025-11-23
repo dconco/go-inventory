@@ -1,6 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
+
+func doWork(done chan bool) {
+	fmt.Println("Worker: Starting long job...")
+	time.Sleep(1 * time.Second)
+	fmt.Println("Worker: Long job done.")
+	done <- true
+}
 
 var inventory []Product
 
@@ -15,21 +25,32 @@ func displayInventory() (result string) {
 	return
 }
 
-func checkStock() bool {
+func checkStock() error {
 	for i := 0; i < len(inventory); i++ {
 		if (inventory[i].Stock < 5) {
-			fmt.Printf("Warning: %s is running low. Only %d left in stock.\n", inventory[i].Name, inventory[i].Stock)
-			return true
+			return fmt.Errorf("stock of %s is running low. only %d left in stock", inventory[i].Name, inventory[i].Stock)
 		}
 	}
-	return false
+	return nil
 }
 
 func main() {
+	done := make(chan bool)
+	go doWork(done)
+
 	addProduct(Product{ Name: "Laptop", Price: 1000.0, Stock: 10 })
 	addProduct(Product{ Name: "Mouse", Price: 25.5, Stock: 20 })
 	addProduct(Product{ Name: "Keyboard", Price: 50.0, Stock: 2 })
 
 	fmt.Println(displayInventory())
-	checkStock()
+
+	error := checkStock()
+	
+	if error != nil {
+		fmt.Println(error)
+	}
+
+
+	<-done
+	fmt.Println("Main: Worker confirmed done, program exiting.")
 }
