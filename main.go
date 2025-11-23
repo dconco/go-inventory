@@ -53,4 +53,13 @@ func main() {
 
 	<-done
 	fmt.Println("Main: Worker confirmed done, program exiting.")
+
+
+	fmt.Print("Enter your name: ")
+
+	var name string
+
+	fmt.Scanln(&name)
+
+	fmt.Println("Hello", name)
 }
